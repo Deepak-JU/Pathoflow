@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Patient {
+  id           String      @id @default(uuid())
+  mrn          String      @unique
+  full_name    String
+  dob          DateTime
+  gender       String
+  contact_info String
+  created_at   DateTime    @default(now())
+  accessions   Accession[]
+}
+
+model Accession {
+  id                 String           @id @default(uuid())
+  accession_number   String           @unique
+  patient_id         String
+  ordering_physician String
+  clinical_history   String
+  priority           String           @default("ROUTINE")
+  status             String           @default("RECEIVED")
+  created_at         DateTime         @default(now())
+
+  patient            Patient          @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  specimens          Specimen[]
+  reports            Report[]
+  qa_alerts          QA_Alert[]
+}
+
+model Specimen {
+  id                String       @id @default(uuid())
+  accession_id      String
+  tissue_type       String
+  container_barcode String       @unique
+  collected_at      DateTime     @default(now())
+  status            String       @default("RECEIVED")
+
+  accession         Accession    @relation(fields: [accession_id], references: [id], onDelete: Cascade)
+  blocks            Block[]
+}
+
+model Block {
+  id               String       @id @default(uuid())
+  specimen_id      String
+  block_number     String
+  cassette_barcode String       @unique
+  embedding_status String       @default("PENDING")
+  created_at       DateTime     @default(now())
+
+  specimen         Specimen     @relation(fields: [specimen_id], references: [id], onDelete: Cascade)
+  slides           Slide[]
+}
+
+model Slide {
+  id            String       @id @default(uuid())
+  block_id      String
+  slide_number  String
+  stain_type    String
+  slide_barcode String       @unique
+  status        String       @default("CUT")
+  created_at    DateTime     @default(now())
+
+  block         Block        @relation(fields: [block_id], references: [id], onDelete: Cascade)
+}
+
+model ChainOfCustodyLog {
+  id           String       @id @default(uuid())
+  entity_type  String
+  entity_id    String
+  station      String
+  action       String
+  performed_by String
+  timestamp    DateTime     @default(now())
+  metadata     String?
+}
+
+model Report {
+  id                     String       @id @default(uuid())
+  accession_id           String
+  pathologist_id         String
+  microscopic_description String
+  diagnosis_code         String
+  impression             String
+  is_signed_off          Boolean      @default(false)
+  signed_off_at          DateTime?
+  created_at             DateTime     @default(now())
+
+  accession              Accession    @relation(fields: [accession_id], references: [id], onDelete: Cascade)
+}
+
+model QA_Alert {
+  id           String       @id @default(uuid())
+  accession_id String
+  alert_type   String
+  severity     String
+  description  String
+  is_resolved  Boolean      @default(false)
+  resolved_by  String?
+  created_at   DateTime     @default(now())
+
+  accession    Accession    @relation(fields: [accession_id], references: [id], onDelete: Cascade)
+}

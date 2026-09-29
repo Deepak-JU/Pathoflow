@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Patient {
+  id           String      @id @default(uuid())
+  mrn          String      @unique
+  full_name    String
+  dob          DateTime
+  gender       String
+  contact_info String
+  created_at   DateTime    @default(now())
+  accessions   Accession[]
+}
+
+model Accession {
+  id                 String           @id @default(uuid())
+  accession_number   String           @unique
+  patient_id         String
+  ordering_physician String
+  clinical_history   String
+  priority           String           @default("ROUTINE") // ROUTINE, URGENT, STAT
+  status             String           @default("RECEIVED") // RECEIVED, IN_PROCESSING, DIAGNOSED, SIGNED_OFF
+  created_at         DateTime         @default(now())
+
+  patient            Patient          @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  specimens          Specimen[]
+  reports            Report[]
+  qa_alerts          QA_Alert[]
+}
+
+model Specimen {
+  id                String       @id @default(uuid())
+  accession_id      String
+  tissue_type       String
+  container_barcode String       @unique
+  collected_at      DateTime     @default(now())
+  status            String       @default("RECEIVED") // RECEIVED, GROSSED, IN_PROCESSING, COMPLETED
+
+  accession         Accession    @relation(fields: [accession_id], references: [id], onDelete: Cascade)
+  blocks            Block[]
+}
+
+model Block {
+  id               String       @id @default(uuid())
+  specimen_id      String
+  block_number     String       // e.g. A1, A2
+  cassette_barcode String       @unique
+  embedding_status String       @default("PENDING") // PENDING, EMBEDDED, SECTIONED
+  created_at       DateTime     @default(now())
+
+  specimen         Specimen     @relation(fields: [specimen_id], references: [id], onDelete: Cascade)
+  slides           Slide[]
+}
+
+model Slide {
+  id            String       @id @default(uuid())
+  block_id      String
+  slide_number  String       // e.g. A1-1
+  stain_type    String       // H&E, IHC, FISH, PAS, etc.
+  slide_barcode String       @unique
+  status        String       @default("CUT") // CUT, STAINED, SCANNED, ARCHIVED
+  created_at    DateTime     @default(now())
+
+  block         Block        @relation(fields: [block_id], references: [id], onDelete: Cascade)
+}
+
+model ChainOfCustodyLog {
+  id           String       @id @default(uuid())
+  entity_type  String       // SPECIMEN, BLOCK, SLIDE
+  entity_id    String
+  station      String       // INTAKE, EMBEDDING, MICROTOMY, STAINING, SCANNING, PATHOLOGY
+  action       String       // RECEIVED, BARCODE_GENERATED, CASSETTE_PRINTED, EMBEDDED, SECTIONED, STAINED, SCANNED, DIAGNOSED, SIGNED_OFF
+  performed_by String
+  timestamp    DateTime     @default(now())
+  metadata     String?      // Optional JSON details
+}
+
+model Report {
+  id                     String       @id @default(uuid())
+  accession_id           String
+  pathologist_id         String
+  microscopic_description String
+  diagnosis_code         String       // ICD-O / SNOMED CT
+  impression             String
+  is_signed_off          Boolean      @default(false)
+  signed_off_at          DateTime?
+  created_at             DateTime     @default(now())
+
+  accession              Accession    @relation(fields: [accession_id], references: [id], onDelete: Cascade)
+}
+
+model QA_Alert {
+  id           String       @id @default(uuid())
+  accession_id String
+  alert_type   String       // TAT_BREACH, MISSING_SLIDE, CRITICAL_DIAGNOSIS, UNKNOWN_BARCODE
+  severity     String       // LOW, MEDIUM, HIGH, CRITICAL
+  description  String
+  is_resolved  Boolean      @default(false)
+  resolved_by  String?
+  created_at   DateTime     @default(now())
+
+  accession    Accession    @relation(fields: [accession_id], references: [id], onDelete: Cascade)
+}
