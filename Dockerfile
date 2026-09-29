@@ -12,7 +12,6 @@ WORKDIR /app/server
 COPY server/package*.json ./
 RUN npm ci
 COPY server/ ./
-# Copy Postgres schema for production container
 RUN cp prisma/schema.postgresql.prisma prisma/schema.prisma
 RUN npx prisma generate
 RUN npm run build
@@ -31,13 +30,16 @@ RUN apk add --no-cache openssl netcat-openbsd
 # Copy server production artifacts
 WORKDIR /app/server
 COPY server/package*.json ./
-RUN npm ci --only=production
+# Install production dependencies plus prisma CLI for engine generation & db push
+RUN npm ci
 
 COPY --from=server-builder /app/server/dist ./dist
 COPY --from=server-builder /app/server/prisma ./prisma
-COPY --from=server-builder /app/server/node_modules/.prisma ./node_modules/.prisma
-COPY --from=server-builder /app/server/node_modules/@prisma ./node_modules/@prisma
 COPY --from=client-builder /app/client/dist /app/client/dist
+
+# Ensure PostgreSQL schema is in place and generate engine specifically for this runtime
+RUN cp prisma/schema.postgresql.prisma prisma/schema.prisma
+RUN npx prisma generate
 
 # Copy entrypoint script
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
