@@ -5,4 +5,6 @@ dist/
 .env.local
 server/dev.db
 server/dev.db-journal
+*.db
+*.db-journal
 .DS_Store
