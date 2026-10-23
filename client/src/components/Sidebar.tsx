@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard,
   ClipboardPlus,
@@ -7,10 +8,13 @@ import {
   Microscope,
   GitFork,
   ShieldAlert,
-  Server
+  Server,
+  Lock
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
+  const { user, canAccessStation } = useAuth();
+
   const navItems = [
     {
       to: '/dashboard',
@@ -55,6 +59,31 @@ export const Sidebar: React.FC = () => {
 
         {navItems.map((item) => {
           const Icon = item.icon;
+          const isAllowed = canAccessStation(item.to);
+
+          if (!isAllowed) {
+            return (
+              <div
+                key={item.to}
+                className="flex items-start gap-3 p-3 rounded-xl border border-transparent text-slate-600 cursor-not-allowed opacity-50 select-none"
+                title="Workstation restricted for your clinical role (Login as Admin for Master Access)"
+              >
+                <div className="mt-0.5 p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-600">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <div className="flex-1 truncate">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-xs text-slate-500">{item.label}</span>
+                    <span className="text-[9px] font-mono px-1 rounded bg-slate-900 text-slate-600 border border-slate-800">
+                      RESTRICTED
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 truncate mt-0.5">Role restricted</p>
+                </div>
+              </div>
+            );
+          }
+
           return (
             <NavLink
               key={item.to}

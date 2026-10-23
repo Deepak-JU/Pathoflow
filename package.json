@@ -15,7 +15,9 @@
     "build": "npm run build:server && npm run build:client",
     "test": "cd server && npm test",
     "db:generate": "cd server && npx prisma generate",
+    "db:generate:mongo": "cd server && npx prisma generate --schema prisma/schema.mongodb.prisma",
     "db:push": "cd server && npx prisma db push",
+    "db:push:mongo": "cd server && npx prisma db push --schema prisma/schema.mongodb.prisma",
     "db:seed": "cd server && npm run seed"
   },
   "devDependencies": {

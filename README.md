@@ -21,16 +21,16 @@ PathoFlow LIMS is a production-grade, full-stack laboratory information manageme
                                         │                         │
                                         ▼                         ▼
                         ┌────────────────────────┐      ┌────────────────────────┐
-                        │ PostgreSQL / Prisma    │      │ Redis Cache & Pub/Sub  │
-                        │ (Relational & Lineage) │      │ (Live Event Bus)       │
+                        │ MongoDB / Prisma       │      │ Redis Cache & Pub/Sub  │
+                        │ (Document & Lineage)   │      │ (Live Event Bus)       │
                         └────────────────────────┘      └────────────────────────┘
 ```
 
 - **Frontend**: React 18+, TypeScript, Tailwind CSS, Lucide React Icons, React Router v6, Vite
 - **Backend**: Node.js, Express.js (TypeScript), Prisma ORM
-- **Database**: PostgreSQL (relational storage + hierarchical queries) with SQLite zero-dependency local dev fallback
+- **Database**: MongoDB (document storage + hierarchical queries) with SQLite zero-dependency local dev fallback
 - **Event Bus & Real-Time Sync**: Redis Pub/Sub (with resilient in-memory EventBus fallback) + Server-Sent Events (SSE)
-- **Containerization**: Docker & Docker Compose (`app`, `postgres`, `redis`)
+- **Containerization**: Docker & Docker Compose (`app`, `mongodb`, `redis`)
 - **Testing**: Vitest test suite for automated QA rule enforcement
 
 ---

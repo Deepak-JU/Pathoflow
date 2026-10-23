@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { useRealTime } from '../context/RealTimeContext';
+import { useAuth } from '../context/AuthContext';
 import { BarcodeScannerModal } from './BarcodeScannerModal';
 import {
   Activity,
   Barcode,
   Radio,
-  AlertTriangle,
   RefreshCw,
-  Bell
+  Bell,
+  LogOut,
+  User as UserIcon
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface NavbarProps {
   activeAlertsCount?: number;
@@ -17,7 +19,14 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ activeAlertsCount = 0 }) => {
   const { isConnected, triggerManualRefresh } = useRealTime();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [isScannerOpen, setIsScannerOpen] = useState<boolean>(false);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
+  };
 
   return (
     <>
@@ -82,6 +91,27 @@ export const Navbar: React.FC<NavbarProps> = ({ activeAlertsCount = 0 }) => {
                 </span>
               )}
             </Link>
+
+            {/* Logged in User Badge & Logout */}
+            {user && (
+              <div className="flex items-center gap-2 pl-2 border-l border-slate-800">
+                <div className="hidden lg:flex flex-col text-right">
+                  <span className="text-xs font-semibold text-slate-200 leading-tight">
+                    {user.name}
+                  </span>
+                  <span className="text-[10px] font-medium text-brand-400">
+                    {user.role.replace('_', ' ')}
+                  </span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-950/60 text-slate-400 hover:text-rose-300 border border-slate-700 hover:border-rose-800 transition-colors cursor-pointer"
+                  title={`Logout (${user.name})`}
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>

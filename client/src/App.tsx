@@ -1,14 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { RealTimeProvider, useRealTime } from './context/RealTimeContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
+import { LoginPage } from './pages/LoginPage';
 import { OperationsQADashboard } from './pages/OperationsQADashboard';
 import { IntakeStation } from './pages/IntakeStation';
 import { GrossingMicrotomyStation } from './pages/GrossingMicrotomyStation';
 import { PathologistCockpit } from './pages/PathologistCockpit';
 import { LineageExplorer } from './pages/LineageExplorer';
 import { limsApi } from './api/limsApi';
+
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+}
+
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return <>{children}</>;
+};
 
 const MainLayout: React.FC = () => {
   const { refreshTrigger } = useRealTime();
@@ -43,8 +60,20 @@ const MainLayout: React.FC = () => {
 
 export default function App() {
   return (
-    <RealTimeProvider>
-      <MainLayout />
-    </RealTimeProvider>
+    <AuthProvider>
+      <RealTimeProvider>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/*"
+            element={
+              <ProtectedRoute>
+                <MainLayout />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </RealTimeProvider>
+    </AuthProvider>
   );
 }

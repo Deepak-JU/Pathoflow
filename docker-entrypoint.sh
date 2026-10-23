@@ -3,15 +3,15 @@ set -e
 
 echo "🔬 [PathoFlow Container Entrypoint] Preparing environment..."
 
-# Wait for PostgreSQL to be ready
-echo "⏳ Waiting for PostgreSQL at postgres:5432..."
-until nc -z postgres 5432; do
+# Wait for MongoDB to be ready
+echo "⏳ Waiting for MongoDB at mongodb:27017..."
+until nc -z mongodb 27017; do
   sleep 1
 done
-echo "✅ PostgreSQL is accepting connections."
+echo "✅ MongoDB is accepting connections."
 
-# Run database push to ensure tables exist in Postgres
-echo "📦 Running Prisma DB push on PostgreSQL..."
+# Run database push to ensure indexes and collections exist in MongoDB
+echo "📦 Running Prisma DB push on MongoDB..."
 npx prisma db push --skip-generate
 
 # Seed database

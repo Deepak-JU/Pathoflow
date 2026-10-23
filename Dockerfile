@@ -12,7 +12,7 @@ WORKDIR /app/server
 COPY server/package*.json ./
 RUN npm ci
 COPY server/ ./
-RUN cp prisma/schema.postgresql.prisma prisma/schema.prisma
+RUN cp prisma/schema.mongodb.prisma prisma/schema.prisma
 RUN npx prisma generate
 RUN npm run build
 
@@ -37,8 +37,8 @@ COPY --from=server-builder /app/server/dist ./dist
 COPY --from=server-builder /app/server/prisma ./prisma
 COPY --from=client-builder /app/client/dist /app/client/dist
 
-# Ensure PostgreSQL schema is in place and generate engine specifically for this runtime
-RUN cp prisma/schema.postgresql.prisma prisma/schema.prisma
+# Ensure MongoDB schema is in place and generate engine specifically for this runtime
+RUN cp prisma/schema.mongodb.prisma prisma/schema.prisma
 RUN npx prisma generate
 
 # Copy entrypoint script
