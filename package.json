@@ -13,6 +13,7 @@
     "build:server": "cd server && npm run build",
     "build:client": "cd client && npm run build",
     "build": "npm run build:server && npm run build:client",
+    "vercel-build": "npm --prefix server install && npm --prefix server run prisma:generate && npm --prefix server run build && npm --prefix client install && npm --prefix client run build",
     "test": "cd server && npm test",
     "db:generate": "cd server && npx prisma generate",
     "db:generate:mongo": "cd server && npx prisma generate --schema prisma/schema.mongodb.prisma",
